@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Data Siswa</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    input[type="text"], button { padding: 8px; margin-bottom: 10px; }
+    input[type="text"] { width: 70%; }
+    button { width: 28%; }
+    #pesan { color: red; margin-top: 10px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Data Siswa</h1>
+
+  <input type="text" id="cari" placeholder="Cari nama atau kelas...">
+  <button id="tombolCari">Cari</button>
+
+  <ul id="daftarSiswa"></ul>
+  <div id="pesan"></div>
+
+  <script>
+    let dataSiswa = []; // Menyimpan semua data siswa
+
+    // Ambil data dari backend
+    fetch('http://localhost/smkti/website-data-siswa/backend/siswa.php')
+      .then(res => res.json())
+      .then(data => {
+        dataSiswa = data;
+        tampilkanData(dataSiswa);
+      });
+
+    // Fungsi untuk menampilkan data siswa
+    function tampilkanData(data) {
+      const list = document.getElementById('daftarSiswa');
+      const pesan = document.getElementById('pesan');
+      list.innerHTML = '';
+      pesan.textContent = '';
+
+      if (data.length === 0) {
+        pesan.textContent = "Nama siswa atau kelas yang dicari belum ditambahkan.";
+        return;
+      }
+
+      data.forEach(siswa => {
+        const li = document.createElement('li');
+        li.textContent = `${siswa.nama} - ${siswa.kelas}`;
+        list.appendChild(li);
+      });
+    }
+
+    // Event ketika tombol cari ditekan
+    document.getElementById('tombolCari').addEventListener('click', function() {
+      const keyword = document.getElementById('cari').value.toLowerCase().trim();
+      const hasilFilter = dataSiswa.filter(siswa =>
+        siswa.nama.toLowerCase().includes(keyword) ||
+        siswa.kelas.toLowerCase().includes(keyword)
+      );
+      tampilkanData(hasilFilter);
+    });
+  </script>
+</body>
+</html>
