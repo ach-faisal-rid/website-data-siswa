@@ -29,6 +29,7 @@ while ($row = mysqli_fetch_assoc($result)) {
   $data[] = $row;
 }
 
+// menampilkan data dalam bentuk JSON
 echo json_encode($data);
 
 ?>
