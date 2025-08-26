@@ -9,17 +9,17 @@ include 'koneksi.php';
 
 // Ambil parameter dari URL
 $nama = isset($_GET['nama']) ? $_GET['nama'] : '';
-$kelas = isset($_GET['kelas']) ? $_GET['kelas'] : '';
+$mata_pelajaran = isset($_GET['mata_pelajaran']) ? $_GET['mata_pelajaran'] : '';
 
 // Buat query dasar
-$sql = "SELECT * FROM siswa WHERE 1=1";
+$sql = "SELECT * FROM guru WHERE 1=1";
 
 // Tambahkan filter jika ada parameter
 if (!empty($nama)) {
   $sql .= " AND nama LIKE '%$nama%'";
 }
-if (!empty($kelas)) {
-  $sql .= " AND kelas = '$kelas'";
+if (!empty($mata_pelajaran)) {
+  $sql .= " AND mata_pelajaran = '$mata_pelajaran'";
 }
 
 $result = mysqli_query($conn, $sql);
