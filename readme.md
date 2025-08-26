@@ -1,5 +1,3 @@
----
-
 # 📂 Struktur Folder — Website Data Siswa
 
 Proyek ini terbagi menjadi dua bagian utama: **Backend** (PHP + MySQL) dan **Frontend** (HTML/JS).
