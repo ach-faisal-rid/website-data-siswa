@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Navigation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <nav class="bg-gray-800 p-3">
+        <ul class="flex gap-6 items-center">
+            <!-- Menu umum -->
+            <li>
+                <a href="index.html"
+                    class="nav-link text-gray-200 hover:text-yellow-400 transition text-decoration-none">
+                    🏠 data siswa
+                </a>
+            </li>
+            <li>
+                <a href="guru.html"
+                    class="nav-link text-gray-200 hover:text-yellow-400 transition text-decoration-none">
+                    📚 guru
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <script>
+        (function highlightActiveLink() {
+            const links = document.querySelectorAll(".nav-link");
+            let path = window.location.pathname.split("/").pop();
+            if (!path) path = "index.html"; // default
+
+            console.log("Current path:", path); // cek di console
+
+            links.forEach(link => {
+                const href = link.getAttribute("href").split("?")[0].split("#")[0];
+                if (href === path) {
+                    link.classList.remove("text-gray-700", "hover:text-blue-500");
+                    link.classList.add("text-blue-600", "font-bold", "underline");
+                    link.setAttribute("aria-current", "page");
+                }
+            });
+        })();
+    </script>
+
+
+</body>
+
+</html>

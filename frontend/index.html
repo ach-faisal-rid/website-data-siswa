@@ -4,130 +4,15 @@
 <head>
     <title>Data Siswa</title>
     <meta charset="utf-8" />
-    <style>
-        body {
-            font-family: sans-serif;
-            padding: 20px;
-            max-width: 800px;
-            margin: auto;
-            background: #f9f9f9;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        .form-container {
-            margin-bottom: 20px;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        input,
-        button {
-            padding: 8px;
-            margin: 5px 0;
-        }
-
-        input[type="text"] {
-            width: calc(50% - 10px);
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            margin-left: 5px;
-        }
-
-        .btn-add {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-edit {
-            background: #ffc107;
-            color: black;
-        }
-
-        .btn-delete {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-search {
-            background: #007bff;
-            color: white;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        li {
-            background: #fff;
-            padding: 10px;
-            margin: 6px 0;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .actions button {
-            margin-left: 5px;
-        }
-
-        #pesan {
-            color: red;
-            margin-top: 10px;
-            font-style: italic;
-        }
-
-        /* === TOAST === */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-
-        .toast {
-            background: #333;
-            color: #fff;
-            padding: 12px 20px;
-            margin-top: 10px;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.4s ease;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .toast.success {
-            background: #28a745;
-        }
-
-        .toast.error {
-            background: #dc3545;
-        }
-    </style>
+    <!-- link ke style.css -->
+    <link rel="stylesheet" href="style.css">
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <title>Website Data Siswa</title>
 </head>
 
 <body>
+    <div id="nav-placeholder"></div>
+
     <h1>Data Siswa</h1>
 
     <!-- Form Tambah & Edit -->
@@ -153,183 +38,16 @@
     <div id="toast-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- link ke script.js -->
+    <script src="script.js"></script>
 
+    <!-- link ke navigation.html -->
     <script>
-
-        const API_BASE = "http://localhost/smkti/website-data-siswa/backend";
-        let dataSiswa = [];
-        let editMode = false;
-
-        // ===== Toast Function =====
-        function showToast(message, type = "success") {
-            const container = document.getElementById("toast-container");
-            const toast = document.createElement("div");
-            toast.className = `toast ${type}`;
-            toast.textContent = message;
-
-            container.appendChild(toast);
-
-            // Trigger animation
-            setTimeout(() => toast.classList.add("show"), 100);
-
-            // Auto remove after 3s
-            setTimeout(() => {
-                toast.classList.remove("show");
-                setTimeout(() => container.removeChild(toast), 400);
-            }, 3000);
-        }
-
-        // ===== Ambil Data =====
-        function ambilData() {
-            fetch(`${API_BASE}/siswa.php?ts=${Date.now()}`)
-                .then(res => res.json())
-                .then(data => {
-                    dataSiswa = data;
-                    tampilkanData(dataSiswa);
-                });
-        }
-        ambilData();
-
-        // ===== Tampilkan Data =====
-        function tampilkanData(data) {
-            const list = document.getElementById("daftarSiswa");
-            const pesan = document.getElementById("pesan");
-            list.innerHTML = "";
-            pesan.textContent = "";
-
-            if (data.length === 0) {
-                pesan.textContent = "Data siswa belum tersedia.";
-                return;
-            }
-
-            data.forEach(siswa => {
-                const li = document.createElement("li");
-                li.innerHTML = `
-          <span>${siswa.nama} - ${siswa.kelas}</span>
-          <div class="actions">
-            <button class="btn btn-edit" onclick="editSiswa(${siswa.id}, '${siswa.nama}', '${siswa.kelas}')">Edit</button>
-            <button class="btn btn-delete" onclick="hapusSiswa(${siswa.id})">Hapus</button>
-          </div>
-        `;
-                list.appendChild(li);
+        fetch("navigation.html")
+            .then((response) => response.text())
+            .then((data) => {
+                document.body.insertAdjacentHTML("afterbegin", data);
             });
-        }
-
-        // ===== Tambah / Update Data =====
-        document.getElementById("simpanBtn").addEventListener("click", function () {
-            const id = document.getElementById("id").value;
-            const nama = document.getElementById("nama").value.trim();
-            const kelas = document.getElementById("kelas").value.trim();
-
-            if (!nama || !kelas) {
-                showToast("Nama dan kelas harus diisi!", "error");
-                return;
-            }
-
-            if (editMode) {
-                // Update
-                fetch(`${API_BASE}/edit-siswa.php`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id, nama, kelas })
-                })
-                    .then(res => res.json())
-                    .then(res => {
-                        showToast(res.status, "success");
-                        resetForm();
-                        ambilData();
-                    })
-                    .catch(() => showToast("Gagal update data!", "error"));
-            } else {
-                // Tambah
-                fetch(`${API_BASE}/tambah-siswa.php`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nama, kelas })
-                })
-                    .then(res => res.json())
-                    .then(res => {
-                        showToast(res.status, "success");
-                        resetForm();
-                        ambilData();
-                    })
-                    .catch(() => showToast("Gagal tambah data!", "error"));
-            }
-        });
-
-        // ===== Edit Data =====
-        function editSiswa(id, nama, kelas) {
-            document.getElementById("id").value = id;
-            document.getElementById("nama").value = nama;
-            document.getElementById("kelas").value = kelas;
-            document.getElementById("simpanBtn").textContent = "Update";
-            document.getElementById("simpanBtn").className = "btn btn-edit";
-            editMode = true;
-        }
-
-        // ===== Hapus Data =====
-        function hapusSiswa(id) {
-            Swal.fire({
-                title: "Yakin ingin hapus?",
-                text: "Data yang sudah dihapus tidak bisa dikembalikan!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Ya, hapus",
-                cancelButtonText: "Batal"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`${API_BASE}/hapus-siswa.php`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id })
-                    })
-                        .then(res => res.json())
-                        .then(res => {
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                icon: "success",
-                                title: "Berhasil hapus data!",
-                                showConfirmButton: false,
-                                timer: 2000
-                            });
-                            ambilData();
-                        })
-                        .catch(() => {
-                            Swal.fire({
-                                toast: true,
-                                position: "top-end",
-                                icon: "error",
-                                title: "Gagal hapus data!",
-                                showConfirmButton: false,
-                                timer: 2000
-                            });
-                        });
-                }
-            });
-        }
-
-        // ===== Reset Form =====
-        function resetForm() {
-            document.getElementById("id").value = "";
-            document.getElementById("nama").value = "";
-            document.getElementById("kelas").value = "";
-            document.getElementById("simpanBtn").textContent = "Tambah";
-            document.getElementById("simpanBtn").className = "btn btn-add";
-            editMode = false;
-        }
-
-        document.getElementById("batalBtn").addEventListener("click", resetForm);
-
-        // ===== Pencarian =====
-        document.getElementById("tombolCari").addEventListener("click", function () {
-            const keyword = document.getElementById("cari").value.toLowerCase().trim();
-            const hasilFilter = dataSiswa.filter(siswa =>
-                siswa.nama.toLowerCase().includes(keyword) ||
-                siswa.kelas.toLowerCase().includes(keyword)
-            );
-            tampilkanData(hasilFilter);
-        });
     </script>
 </body>
 

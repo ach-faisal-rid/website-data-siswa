@@ -13,21 +13,21 @@ include 'koneksi.php';
 $input = json_decode(file_get_contents('php://input'), true);
 
 // Validasi input
-if (!isset($input['nama']) || !isset($input['mata_pelajaran']) || 
-    trim($input['nama']) === '' || trim($input['mata_pelajaran']) === '') {
+if (!isset($input['nama']) || !isset($input['mapel']) || 
+    trim($input['nama']) === '' || trim($input['mapel']) === '') {
   echo json_encode([
     "status" => "gagal",
-    "error" => "Field 'nama' dan 'mata_pelajaran' wajib diisi."
+    "error" => "Field 'nama' dan 'mapel' wajib diisi."
   ]);
   exit;
 }
 
 // Bersihkan input
 $nama = mysqli_real_escape_string($conn, trim($input['nama']));
-$mata_pelajaran = mysqli_real_escape_string($conn, trim($input['mata_pelajaran']));
+$mapel = mysqli_real_escape_string($conn, trim($input['mapel']));
 
 // Query simpan
-$sql = "INSERT INTO guru (nama, mata_pelajaran) VALUES ('$nama', '$mata_pelajaran')";
+$sql = "INSERT INTO guru (nama, mapel) VALUES ('$nama', '$mapel')";
 
 if (mysqli_query($conn, $sql)) {
   echo json_encode([
@@ -36,7 +36,7 @@ if (mysqli_query($conn, $sql)) {
     "data" => [
       "id" => mysqli_insert_id($conn),
       "nama" => $nama,
-      "mata_pelajaran" => $mata_pelajaran
+      "mapel" => $mapel
     ]
   ]);
 } else {

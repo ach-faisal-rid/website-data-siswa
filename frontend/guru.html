@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Data Guru</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+</head>
+<body>
+
+    <div id="nav-placeholder"></div>
+
+  <h1>Data Guru</h1>
+
+  <!-- Form Tambah & Edit (sama gaya dengan index.html) -->
+  <div class="form-container">
+      <input type="hidden" id="id">
+      <input type="text" id="nama" placeholder="Nama guru">
+      <input type="text" id="mapel" placeholder="Mata pelajaran">
+      <button id="simpanBtn" class="btn btn-add">Tambah</button>
+      <button id="batalBtn" class="btn">Batal</button>
+  </div>
+
+  <!-- Pencarian -->
+  <div class="form-container">
+      <input type="text" id="cari" placeholder="Cari nama atau mata pelajaran...">
+      <button id="tombolCari" class="btn btn-search">Cari</button>
+  </div>
+
+  <!-- Daftar guru -->
+  <ul id="daftarGuru"></ul>
+  <div id="pesan"></div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:2000;">
+    <div class="spinner" style="width:48px;height:48px;border-radius:50%;border:6px solid rgba(255,255,255,0.2);border-top-color:#fff;animation:spin .9s linear infinite;"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    const API_BASE = "http://localhost/smkti/website-data-siswa/backend";
+    let dataGuru = [];
+    let editMode = false;
+
+    function setLoading(on){
+      const overlay = document.getElementById("loading-overlay");
+      const simpanBtn = document.getElementById("simpanBtn");
+      const batalBtn = document.getElementById("batalBtn");
+      const cari = document.getElementById("cari");
+      overlay.style.display = on ? "flex" : "none";
+      simpanBtn.disabled = on;
+      batalBtn.disabled = on;
+      cari.disabled = on;
+    }
+
+    function showToast(msg, type="success"){
+      const container = document.getElementById("toast-container");
+      const t = document.createElement("div");
+      t.className = "toast " + (type === "error" ? "error" : "");
+      t.textContent = msg;
+      container.appendChild(t);
+      setTimeout(()=> t.classList.add("show"), 50);
+      setTimeout(()=> { t.classList.remove("show"); setTimeout(()=> t.remove(),400); }, 3000);
+    }
+
+    function ambilData(){
+      setLoading(true);
+      fetch(`${API_BASE}/guru.php?ts=${Date.now()}`)
+        .then(r=>r.json())
+        .then(j=>{
+          dataGuru = j || [];
+          tampilkanData(dataGuru);
+        })
+        .catch(()=> {
+          showToast("Gagal mengambil data guru!", "error");
+          document.getElementById("pesan").textContent = "Gagal mengambil data dari server.";
+        })
+        .finally(()=> setLoading(false));
+    }
+
+    function tampilkanData(listData){
+      const ul = document.getElementById("daftarGuru");
+      const pesan = document.getElementById("pesan");
+      ul.innerHTML = ""; pesan.textContent = "";
+      if(!listData || listData.length === 0){
+        pesan.textContent = "Data guru belum tersedia.";
+        return;
+      }
+      listData.forEach(guru=>{
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = `${guru.nama} - ${guru.mapel || guru.mata_pelajaran || ""}`;
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const btnEdit = document.createElement("button");
+        btnEdit.className = "btn btn-edit";
+        btnEdit.textContent = "Edit";
+        btnEdit.addEventListener("click", ()=> {
+          editGuru(guru.id, guru.nama, guru.mapel || guru.mata_pelajaran || "");
+        });
+
+        const btnDel = document.createElement("button");
+        btnDel.className = "btn btn-delete";
+        btnDel.textContent = "Hapus";
+        btnDel.addEventListener("click", ()=> hapusGuru(guru.id));
+
+        actions.appendChild(btnEdit);
+        actions.appendChild(btnDel);
+
+        li.appendChild(span);
+        li.appendChild(actions);
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById("simpanBtn").addEventListener("click", ()=>{
+      const id = document.getElementById("id").value;
+      const nama = document.getElementById("nama").value.trim();
+      const mapel = document.getElementById("mapel").value.trim();
+      if(!nama || !mapel){
+        showToast("Nama dan mata pelajaran harus diisi!", "error");
+        return;
+      }
+      setLoading(true);
+      if(editMode){
+        fetch(`${API_BASE}/edit-guru.php`, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ id, nama, mapel })
+        })
+        .then(r=>r.json())
+        .then(res=>{
+          showToast(res.status || "Berhasil update", "success");
+          resetForm();
+          ambilData();
+        })
+        .catch(()=> showToast("Gagal update data!", "error"))
+        .finally(()=> setLoading(false));
+      } else {
+        fetch(`${API_BASE}/tambah-guru.php`, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ nama, mapel })
+        })
+        .then(r=>r.json())
+        .then(res=>{
+          showToast(res.status || "Berhasil tambah", "success");
+          resetForm();
+          ambilData();
+        })
+        .catch(()=> showToast("Gagal tambah data!", "error"))
+        .finally(()=> setLoading(false));
+      }
+    });
+
+    function editGuru(id, nama, mapel){
+      document.getElementById("id").value = id;
+      document.getElementById("nama").value = nama;
+      document.getElementById("mapel").value = mapel;
+      const btn = document.getElementById("simpanBtn");
+      btn.textContent = "Update";
+      btn.className = "btn btn-edit";
+      editMode = true;
+    }
+
+    function hapusGuru(id){
+      Swal.fire({
+        title: "Yakin ingin hapus?",
+        text: "Data yang sudah dihapus tidak bisa dikembalikan!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, hapus",
+        cancelButtonText: "Batal"
+      }).then(result=>{
+        if(result.isConfirmed){
+          setLoading(true);
+          fetch(`${API_BASE}/hapus-guru.php`, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ id })
+          })
+          .then(r=>r.json())
+          .then(()=> {
+            Swal.fire({ toast:true, position:"top-end", icon:"success", title:"Berhasil hapus data!", showConfirmButton:false, timer:1500 });
+            ambilData();
+          })
+          .catch(()=> Swal.fire({ toast:true, position:"top-end", icon:"error", title:"Gagal hapus data!", showConfirmButton:false, timer:1500 }))
+          .finally(()=> setLoading(false));
+        }
+      });
+    }
+
+    function resetForm(){
+      document.getElementById("id").value = "";
+      document.getElementById("nama").value = "";
+      document.getElementById("mapel").value = "";
+      const btn = document.getElementById("simpanBtn");
+      btn.textContent = "Tambah";
+      btn.className = "btn btn-add";
+      editMode = false;
+    }
+    document.getElementById("batalBtn").addEventListener("click", resetForm);
+
+    document.getElementById("tombolCari").addEventListener("click", ()=>{
+      const kw = document.getElementById("cari").value.toLowerCase().trim();
+      const hasil = dataGuru.filter(g => (g.nama||"").toLowerCase().includes(kw) || ((g.mapel||g.mata_pelajaran||"").toLowerCase().includes(kw)));
+      tampilkanData(hasil);
+    });
+
+    // start
+    ambilData();
+
+    // load navigation
+    fetch("navigation.html").then(r=>r.text()).then(t=> document.body.insertAdjacentHTML("afterbegin", t));
+  </script>
+
+  <style>
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+    /* minimal toast style if not in style.css */
+    #toast-container{ position:fixed; right:16px; top:16px; z-index:3000; }
+    .toast{ background:#333;color:#fff;padding:10px 14px;border-radius:6px;margin-top:8px;opacity:0;transition:all .3s ease;transform:translateY(-6px);}
+    .toast.show{opacity:1;transform:translateY(0);}
+    .toast.error{background:#c0392b;}
+    .form-container{ margin:12px 0; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .form-container input[type="text"]{ padding:8px; }
+    .actions{ display:inline-flex; gap:6px; margin-left:12px; }
+  </style>
+
+</body>
+</html>
