@@ -57,3 +57,59 @@ website-data-siswa/
    * `http://localhost/website-data-siswa/frontend/index.html`
 
 ---
+
+# flowchart
+
+```mermaid
+flowchart TD
+    A[Pengguna Mengakses Aplikasi] --> B{Request Type}
+    
+    B -->|GET| C[Ambil Data Siswa]
+    B -->|POST| D[Tambah Data Siswa]
+    B -->|PUT| E[Edit Data Siswa]
+    B -->|DELETE| F[Hapus Data Siswa]
+    
+    subgraph Backend [Backend Processing]
+        C --> C1[siswa.php<br>GET Request]
+        D --> D1[tambah-siswa.php<br>POST Request]
+        E --> E1[edit-siswa.php<br>PUT Request]
+        F --> F1[hapus-siswa.php<br>DELETE Request]
+        
+        C1 --> C2[Query SELECT<br>dari database]
+        D1 --> D2[Query INSERT<br>ke database]
+        E1 --> E2[Query UPDATE<br>di database]
+        F1 --> F2[Query DELETE<br>dari database]
+        
+        C2 --> C3[Return data JSON]
+        D2 --> D3[Return status sukses/gagal]
+        E2 --> E3[Return status sukses/gagal]
+        F2 --> F3[Return status sukses/gagal]
+    end
+    
+    subgraph Database [MySQL Database]
+        DB[(Tabel Siswa<br>id, nama, kelas)]
+    end
+    
+    C2 --> DB
+    D2 --> DB
+    E2 --> DB
+    F2 --> DB
+    
+    DB --> C3
+    DB --> D3
+    DB --> E3
+    DB --> F3
+    
+    C3 --> G[Tampilkan Data di Frontend]
+    D3 --> H[Notifikasi<br>Data berhasil ditambah]
+    E3 --> I[Notifikasi<br>Data berhasil diupdate]
+    F3 --> J[Notifikasi<br>Data berhasil dihapus]
+    
+    H --> K[Refresh Data]
+    I --> K
+    J --> K
+    
+    K --> G
+    
+    G --> L[Selesai]
+```
