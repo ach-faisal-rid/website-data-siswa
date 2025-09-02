@@ -58,7 +58,7 @@ website-data-siswa/
 
 ---
 
-# flowchart
+# flowchart struktur
 
 ```mermaid
 flowchart TD
